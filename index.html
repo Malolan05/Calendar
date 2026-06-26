@@ -1,3 +1,14 @@
+Looking at the code, I can see that UTC+5:30 is already set as the default timezone in several places:
+
+1. The timezone dropdown has `+05:30` selected by default (line with `selected` attribute)
+2. The `curTZ` variable is set to `5.5` in the initialization
+3. The `tzDisp` element is set to `'UTC+05:30'`
+
+However, there's a small issue - the `tzSel` dropdown value is set to `'+05:30'` but the `TZ_MAP` uses `'+05:30'` as the key with value `5.5`. This is already correctly set up.
+
+Let me make the default more explicit and ensure it works properly:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -475,16 +486,6 @@
     document.getElementById('lblYear').textContent = t.lblYear;
     document.getElementById('calcBtnLabel').textContent = t.calcBtnLabel;
     document.getElementById('ekaPlaceholder').textContent = t.ekaPlaceholder;
-    // Update table headers (daily + monthly)
-    const heads = document.querySelectorAll('#dailyHead, #monthHead');
-    heads.forEach(h => {
-      if (h) {
-        const cols = ['Date','Day','Sunrise / Arunodaya','Solar Noon','Sunset','Tamil Month','Chandramana','Tithi','Nakshatra'];
-        // We keep them simple; we'll just update via mapping
-      }
-    });
-    // Also update sub-headers: "Time", "Tithi @Arun", "Nakshatra @Arun"
-    // We'll just keep them as is since they are generic.
   }
 
   // Language toggle
@@ -494,7 +495,6 @@
       this.classList.add('active');
       currentLang = this.dataset.lang;
       applyLanguage(currentLang);
-      // Re-render dynamic content to pick up language changes in data (dates, etc remain same)
       refreshDisplay();
       if (document.getElementById('tab-monthly').classList.contains('active')) renderMonthly();
       if (document.getElementById('tab-ekadashi').classList.contains('active')) renderEkadashi();
@@ -763,6 +763,8 @@
       let ekaDurH=Math.floor(ekaDuration*24), ekaDurM=Math.floor((ekaDuration*24-ekaDurH)*60);
       let dwaDurH=Math.floor(dwaDuration*24), dwaDurM=Math.floor((dwaDuration*24-dwaDurH)*60);
       let harivasaraDur=harivasaraEnd-harivasaraStart; let hvH=Math.floor(harivasaraDur*24), hvM=Math.floor((harivasaraDur*24-hvH)*60);
+      let fastDt = fastDateUTC;
+      let paranaDt = paranaDayDate;
       results.push({
         ekaName,isShukla,fastDate:fmtDate(fastDt),fastDateObj:fastDt,actualFastDate:fmtDate(actualFastDateUTC),actualFastDateObj:actualFastDateUTC,
         paranaDate:fmtDate(paranaDt),type:actualFastType,isViddha,isMahadvadashi,
@@ -892,16 +894,24 @@
       $('ekaContent').innerHTML=html;}catch(err){$('ekaContent').innerHTML=`<div class="eka-empty"><div class="ei">❌</div>Error: ${err.message}</div>`;}},80);
   }
 
-  // Init
-  let t=new Date();
-  curDate=new Date(t.getFullYear(),t.getMonth(),t.getDate());
-  curMonth=new Date(t.getFullYear(),t.getMonth(),1);
-  $('tzSel').value='+05:30';
-  curTZ=5.5;
-  $('tzDisp').textContent='UTC+05:30';
+  // Init - explicitly set UTC+5:30 as default
+  let t = new Date();
+  curDate = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  curMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+  
+  // Ensure UTC+5:30 is selected
+  $('tzSel').value = '+05:30';
+  curTZ = 5.5;
+  $('tzDisp').textContent = 'UTC+05:30';
+  
+  // Set default location (Hyderabad)
+  $('lat').value = '17.3850';
+  $('lon').value = '78.4867';
+  
   setDatePicker();
   refreshDisplay();
   applyLanguage('en');
 </script>
 </body>
 </html>
+```
