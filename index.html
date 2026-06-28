@@ -1,14 +1,3 @@
-Looking at the code, I can see that UTC+5:30 is already set as the default timezone in several places:
-
-1. The timezone dropdown has `+05:30` selected by default (line with `selected` attribute)
-2. The `curTZ` variable is set to `5.5` in the initialization
-3. The `tzDisp` element is set to `'UTC+05:30'`
-
-However, there's a small issue - the `tzSel` dropdown value is set to `'+05:30'` but the `TZ_MAP` uses `'+05:30'` as the key with value `5.5`. This is already correctly set up.
-
-Let me make the default more explicit and ensure it works properly:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
